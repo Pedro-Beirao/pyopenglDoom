@@ -1,13 +1,35 @@
 import struct
+import sys
+from PIL import Image
 
-wadPath = "doom.wad"
-mapName = input("What level? (ex: e1m1 / map01)\n\n")
+wadPath = "/users/pedro/dooma.wad"
+
+noGL = True
+for argIndex in range(len(sys.argv)):
+    if sys.argv[argIndex]=="-iwad":
+        wadPath = sys.argv[argIndex+1]
+    if sys.argv[argIndex]=="-gl":
+        noGL=False
 
 wadFile = open(wadPath, "rb")
 
+mapName = input("What level? (ex: e1m1)\n")
+
+print()
+
 wadType = wadFile.read(4)
 
+def useGLnodes():
+    if noGL:
+        return False
+    else:
+        return True
+
 #read 2 bytes with offset
+def read1byte(offset = 0):
+    wadFile.seek(offset)
+    return struct.unpack("<B", wadFile.read(1))[0]
+
 def read2bytes(offset = 0):
     wadFile.seek(offset)
     return struct.unpack("<H", wadFile.read(2))[0]
@@ -30,19 +52,16 @@ def read8bytes(offset = 0):
 directoryCount = read4bytes(4)
 directoryOffset = read4bytes(8)
 
-#print(wadType)
-#print(directoryCount)
-#print(directoryOffset)
-
 for i in range(directoryCount):
-    #read 4 bytes with offset
-    offset = read4bytes(directoryOffset + i * 16)
-    #read 4 bytes with offset
-    size = read4bytes(directoryOffset + i * 16 + 4)
-    name = read8bytes(directoryOffset + i * 16 + 7)
-    #print(offset)
-    #print(size)
-    #print(name)
+    name = read8bytes(directoryOffset + i * 16 + 8)
+    if name.strip("\x00") == "GL_SEGS":
+        noGL = False
+
+if noGL:
+    if input("No GL nodes found on the provided wad file.\nTo correctly render the map, you should generate GL nodes using glBSP ( link )\n\nDo you want to proceed without GL nodes? (y/n)").lower()=="y":
+        pass
+    else:
+        exit()
 
 
 def readVertexData(offset):
@@ -143,6 +162,9 @@ def readGLSubsectorData(offset):
 
 
 
+
+
+
 def findMapIndex():
     for i in range(directoryCount):
         name = read8bytes(directoryOffset + i * 16 + 8)
@@ -150,7 +172,17 @@ def findMapIndex():
             return i
     return -1
 
+
 mapIndex = findMapIndex()
+
+
+
+
+
+
+
+
+
 
 def readMapVertex(): #vertex = map + 4
     offset = read4bytes(directoryOffset + (mapIndex+4) * 16)
@@ -295,7 +327,6 @@ def readMapGLSegs(): #glsegs = map + 13
     lis = []
     for i in range(int(numberOfVertex)):
         d = readGLSegsData(offset + i * 10)
-        print(d)
         lis.append(d)
     return lis
 
@@ -319,5 +350,57 @@ def readMapGLSubsectors(): #glsubsectors = map + 14
 #print(readMapSidedefs())
 #print(readMapGLVertex())
 #print(readMapGLSegs())
-readMapGLSegs()
 #print(readMapGLSubsectors())
+
+
+
+
+
+
+
+def findPlaypalIndex():
+    for i in range(directoryCount):
+        name = read8bytes(directoryOffset + i * 16 + 8)
+        if name.rstrip('\0') == "PLAYPAL":
+            return i
+    return -1
+
+def readPlaypal():
+    offset = read4bytes(directoryOffset + findPlaypalIndex() * 16)
+    size = read4bytes(directoryOffset + findPlaypalIndex() * 16 + 4)
+    playPal1Size = size / 14
+    playpal=[]
+    for c in range(256):
+        playpal+=[(read1byte(offset + c * 3),read1byte(offset + c * 3 + 1),read1byte(offset + c * 3 + 2))]
+    return playpal
+
+
+def findF_START():
+    for i in range(directoryCount):
+        name = read8bytes(directoryOffset + i * 16 + 8)
+        if name.rstrip('\0') == "F_START":
+            return i
+    return -1
+
+def findF_END():
+    for i in range(directoryCount):
+        name = read8bytes(directoryOffset + i * 16 + 8)
+        if name.rstrip('\0') == "F_END":
+            return i
+    return -1
+
+def findFlats():
+    flatsIndexes=[]
+    playpal = readPlaypal()
+    for t in range(findF_START()+2,findF_END()):
+        offset = read4bytes(directoryOffset + t * 16)
+        size = read4bytes(directoryOffset + t * 16 + 4)
+        name = read8bytes(directoryOffset + t * 16 + 8)
+        if name[2] != "_":
+            c=[]
+            for i in range(4096):
+                c += [playpal[read1byte(offset + i)]]
+            flatsIndexes.append([name.rstrip("\x00"),t,c])
+    return flatsIndexes
+
+
