@@ -18,7 +18,7 @@ As I couldn't find binaries anywhere for MacOS, I decided to compile it myself. 
 2. Drag the glBSP.exe into the window
 3. Drag the WAD file you want to write GL nodes to, into the window
 ```
-C:\\path\to\glBSP.exe C:\path\to\doom.wad
+C:\path\to\glBSP.exe C:\path\to\doom.wad
 ```
 This will create a .gwa file, it contains our precious GL nodes
 
