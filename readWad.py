@@ -1,16 +1,20 @@
 import struct
 import sys
-from PIL import Image
 
-wadPath = "/users/pedro/dooma.wad"
+wadPath = ""
+
+def showHelp():
+    print("Usage:")
+    print("  python main.py C:\\path\\to\\doom.wad\n")
+    print("https://github.com/Pedro-Beirao/pyopenglDoomRenderer")
 
 noGL = True
-for argIndex in range(len(sys.argv)):
-    if sys.argv[argIndex]=="-iwad":
-        wadPath = sys.argv[argIndex+1]
-    if sys.argv[argIndex]=="-gl":
-        noGL=False
-
+if len(sys.argv) > 1:
+    wadPath = sys.argv[1]
+else:
+    print("\nNo IWAD specified\n")
+    showHelp()
+    exit()
 wadFile = open(wadPath, "rb")
 
 mapName = input("What level? (ex: e1m1)\n")
@@ -44,9 +48,7 @@ def read8bytes(offset = 0):
         sss = ''
         c = ''
         for i in range(0, 8):
-            try:
                 c += str(struct.unpack('<c', wadFile.read(1))[0], "ascii")
-            except: pass
         return c
 
 directoryCount = read4bytes(4)
