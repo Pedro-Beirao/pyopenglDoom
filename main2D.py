@@ -53,7 +53,6 @@ def drawSectors():
         s=[]
         for linedef in linedefs:
             if sectors[sidedefs[linedef[5]][5]]==sector:
-                print("ok")
                 s+=[[vertexes[linedef[0]][0]/zoom+mapX,vertexes[linedef[0]][1]/zoom+mapY]]
                 s+=[[vertexes[linedef[1]][0]/zoom+mapX,vertexes[linedef[1]][1]/zoom+mapY]]
         try: pygame.draw.polygon(scree, (c[0],c[1],c[2]), s)
@@ -175,7 +174,7 @@ while run:
         if keypress[pygame.K_MINUS]:
             zoom += 2
 
-        drawWalls()
+        #drawWalls()
 
         #drawPlayerDot()
 
@@ -185,8 +184,8 @@ while run:
 
         #drawSegs()
         #drawSubsectors()
-        debug()
-        #drawSectors()
+        #debug()
+        drawSectors()
 
         pygame.display.flip()
         clock.tick(500)
