@@ -10,7 +10,7 @@ glBSP works on Windows Linux and MacOS
 
 Binaries for the Windows and Linux (x86) are available in http://glbsp.sourceforge.net/download.php
 
-As I couldn't find binaries anywhere for MacOS, I decided to compile it myself. You can download it in https://github.com/Pedro-Beirao/pyopenglDoomRenderer/releases
+As I couldn't find binaries anywhere for MacOS, I decided to compile it myself. You can download it in [Releases](https://github.com/Pedro-Beirao/pyopenglDoomRenderer/releases)
 
 ### 2 - Use glBSP
 
