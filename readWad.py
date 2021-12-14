@@ -8,7 +8,7 @@ def showHelp():
     print("  python main.py C:\\path\\to\\doom.wad\n")
     print("https://github.com/Pedro-Beirao/pyopenglDoomRenderer")
 
-noGL = True
+noGL = False
 if len(sys.argv) > 1:
     wadPath = sys.argv[1]
 else:
@@ -16,6 +16,8 @@ else:
     showHelp()
     exit()
 wadFile = open(wadPath, "rb")
+try: gwaFile = open(wadPath[:-4] + ".gwa", "rb")
+except: noGL = True
 
 mapName = input("What level? (ex: e1m1)\n")
 
@@ -29,7 +31,6 @@ def useGLnodes():
     else:
         return True
 
-#read 2 bytes with offset
 def read1byte(offset = 0):
     wadFile.seek(offset)
     return struct.unpack("<B", wadFile.read(1))[0]
@@ -38,7 +39,6 @@ def read2bytes(offset = 0):
     wadFile.seek(offset)
     return struct.unpack("<H", wadFile.read(2))[0]
 
-#read 4 bytes with offset
 def read4bytes(offset = 0):
     wadFile.seek(offset)
     return struct.unpack("<I", wadFile.read(4))[0]
@@ -51,19 +51,34 @@ def read8bytes(offset = 0):
                 c += str(struct.unpack('<c', wadFile.read(1))[0], "ascii")
         return c
 
+def read2bytesGL(offset = 0):
+    gwaFile.seek(offset)
+    return struct.unpack("<H", gwaFile.read(2))[0]
+
+def read4bytesGL(offset = 0):
+    gwaFile.seek(offset)
+    return struct.unpack("<I", gwaFile.read(4))[0]
+
+def read8bytesGL(offset = 0):
+        gwaFile.seek(offset)
+        sss = ''
+        c = ''
+        for i in range(0, 8):
+                c += str(struct.unpack('<c', gwaFile.read(1))[0], "ascii")
+        return c
+
+
 directoryCount = read4bytes(4)
 directoryOffset = read4bytes(8)
 
-for i in range(directoryCount):
-    name = read8bytes(directoryOffset + i * 16 + 8)
-    if name.strip("\x00") == "GL_SEGS":
-        noGL = False
-
 if noGL:
-    if input("No GL nodes found on the provided wad file.\nTo correctly render the map, you should generate GL nodes using glBSP ( link )\n\nDo you want to proceed without GL nodes? (y/n)").lower()=="y":
+    if input("\033[93m No GL nodes found on the provided wad file. \033[0m \nTo correctly render the map, you should generate GL nodes using glBSP\n( https://github.com/Pedro-Beirao/pyopenglDoomRenderer/blob/main/docs/glBSP-guide.md )\n\nDo you want to proceed without GL nodes? (y/n)").lower()=="y":
         pass
     else:
         exit()
+else:
+    directoryCountGL = read4bytesGL(4)
+    directoryOffsetGL = read4bytesGL(8)
 
 
 def readVertexData(offset):
@@ -140,24 +155,24 @@ def readThingData(offset):
     ]
 
 def readGLVertData(offset):
-    return [read2bytes(offset), #no clue what this is, the documentation sucks
-            read2bytes(offset + 2),#x
-            read2bytes(offset + 4), #no clue
-            read2bytes(offset + 6) #y
+    return [read2bytesGL(offset), #no clue what this is, the documentation sucks
+            read2bytesGL(offset + 2),#x
+            read2bytesGL(offset + 4), #no clue
+            read2bytesGL(offset + 6) #y
     ]
 def readGLSegsData(offset):
-    return [int(bin(read2bytes(offset))[2:].zfill(16)[1:],2), #start
-            int(bin(read2bytes(offset))[2:].zfill(16)[0]),
-            int(bin(read2bytes(offset+2))[2:].zfill(16)[1:],2), #end
-            int(bin(read2bytes(offset+2))[2:].zfill(16)[0]),
-            read2bytes(offset + 4), #linedef
-            read2bytes(offset + 6), #side
-            read2bytes(offset + 8) #partner seg
+    return [int(bin(read2bytesGL(offset))[2:].zfill(16)[1:],2), #start
+            int(bin(read2bytesGL(offset))[2:].zfill(16)[0]),
+            int(bin(read2bytesGL(offset+2))[2:].zfill(16)[1:],2), #end
+            int(bin(read2bytesGL(offset+2))[2:].zfill(16)[0]),
+            read2bytesGL(offset + 4), #linedef
+            read2bytesGL(offset + 6), #side
+            read2bytesGL(offset + 8) #partner seg
     ]
 
 def readGLSubsectorData(offset):
-    return [read2bytes(offset), #seg count
-            read2bytes(offset + 2) #no clue what this is, the documentation sucks
+    return [read2bytesGL(offset), #seg count
+            read2bytesGL(offset + 2) #no clue what this is, the documentation sucks
     ]
 
 
@@ -174,8 +189,18 @@ def findMapIndex():
             return i
     return -1
 
+def findMapIndexGL():
+    for i in range(directoryCountGL):
+        name = read8bytesGL(directoryOffsetGL + i * 16 + 8)
+        if name.rstrip('\0').lower() == "gl_"+mapName.lower():
+            return i
+    return -1
+
 
 mapIndex = findMapIndex()
+
+if not noGL:
+    mapIndexGL = findMapIndexGL()
 
 
 
@@ -309,8 +334,8 @@ def readMapSidedefs(): #sectors = map + 3
     return lis
 
 def readMapGLVertex(): #glvertex = map + 12
-    offset = read4bytes(directoryOffset + (mapIndex+12) * 16)
-    size = read4bytes(directoryOffset + (mapIndex+12) * 16 + 4)
+    offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+1) * 16)
+    size = read4bytesGL(directoryOffsetGL + (mapIndexGL+1) * 16 + 4)
     numberOfVertex = size / 8
     vertexList = []
     for i in range(int(numberOfVertex)):
@@ -323,8 +348,8 @@ def readMapGLVertex(): #glvertex = map + 12
     return vertexList
 
 def readMapGLSegs(): #glsegs = map + 13
-    offset = read4bytes(directoryOffset + (mapIndex+13) * 16)
-    size = read4bytes(directoryOffset + (mapIndex+13) * 16 + 4)
+    offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+2) * 16)
+    size = read4bytesGL(directoryOffsetGL + (mapIndexGL+2) * 16 + 4)
     numberOfVertex = size / 10
     lis = []
     for i in range(int(numberOfVertex)):
@@ -333,8 +358,8 @@ def readMapGLSegs(): #glsegs = map + 13
     return lis
 
 def readMapGLSubsectors(): #glsubsectors = map + 14
-    offset = read4bytes(directoryOffset + (mapIndex+14) * 16)
-    size = read4bytes(directoryOffset + (mapIndex+14) * 16 + 4)
+    offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+3) * 16)
+    size = read4bytesGL(directoryOffsetGL + (mapIndexGL+3) * 16 + 4)
     numberOf = size / 4
     lis = []
     for i in range(int(numberOf)):

@@ -11,9 +11,10 @@ sidedefs = readWad.readMapSidedefs()
 sectors = readWad.readMapSectors()
 subsectors = readWad.readMapSubsectors()
 segs = readWad.readMapSegs()
-glvertexes= readWad.readMapGLVertex()
-glsegs = readWad.readMapGLSegs()
-glsubsectors = readWad.readMapGLSubsectors()
+if readWad.useGLnodes():
+    glvertexes= readWad.readMapGLVertex()
+    glsegs = readWad.readMapGLSegs()
+    glsubsectors = readWad.readMapGLSubsectors()
 
 def getPlayerPosition():
     for thing in things:

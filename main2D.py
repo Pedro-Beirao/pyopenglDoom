@@ -12,9 +12,10 @@ sectors = readWad.readMapSectors()
 nodes =readWad.readMapNodes()
 segs = readWad.readMapSegs()
 subsectors = readWad.readMapSubsectors()
-glvertexes= readWad.readMapGLVertex()
-glsegs = readWad.readMapGLSegs()
-glsubsectors = readWad.readMapGLSubsectors()
+if readWad.useGLnodes():
+    glvertexes= readWad.readMapGLVertex()
+    glsegs = readWad.readMapGLSegs()
+    glsubsectors = readWad.readMapGLSubsectors()
 
 mapX=100
 mapY=500
@@ -79,8 +80,6 @@ def drawSubsectors():
             l=linedefs[segs[subsector[1]+size][3]]
             v.append([vx[0]/zoom+mapX,vx[1]/zoom+mapY])
             v.append([vy[0]/zoom+mapX,vy[1]/zoom+mapY])
-            #v.append([vertexes[l[0]][0]/zoom+mapX,vertexes[l[0]][1]/zoom+mapY])
-            #v.append([vertexes[l[1]][0]/zoom+mapX,vertexes[l[1]][1]/zoom+mapY])
         try:
             pygame.draw.polygon(scree, (c[0],c[1],c[2]), v)
         except: pass
@@ -104,7 +103,6 @@ def debug():
                 else:
                     vy=glvertexes[glsegs[glsubsector[1]+size][2]]
                     v+=[[vy[0]/zoom+mapX,vy[1]/zoom+mapY]]
-                #pygame.draw.line(scree, (c[0],c[1],c[2]), (vx[0]/zoom+mapX,vx[1]/zoom+mapY),(vy[0]/zoom+mapX,vy[1]/zoom+mapY))
         pygame.draw.polygon(scree, (c[0],c[1],c[2]), v)
         
     
@@ -184,8 +182,8 @@ while run:
 
         #drawSegs()
         #drawSubsectors()
-        #debug()
-        drawSectors()
+        debug()
+        #drawSectors()
 
         pygame.display.flip()
         clock.tick(500)

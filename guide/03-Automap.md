@@ -9,10 +9,9 @@ from os import read
 import readWad
 import pygame
 import random
-import math
 ```
 
-Lets also use the previously created function to get the data from the WAD and store them
+Lets also use the previously created functions to get the data from the WAD and store them
 
 ```python
 things = readWad.readMapThings()
@@ -94,6 +93,20 @@ def drawWalls():
 ```
 
 Yep its that simple. A linedef contains the index of 2 vertexes, we just get the coords of said vertexes and draw a line.
+
+Now just call the function from within the main loop
+
+```python
+        ...
+        if keypress[pygame.K_MINUS]:
+            zoom += 2
+
+        drawWalls()
+
+        pygame.display.flip()
+        clock.tick(500)
+        ...
+```
 
 ![Automap_walls](./images/automap_walls.jpg)
 
