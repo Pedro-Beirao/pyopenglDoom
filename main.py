@@ -33,7 +33,7 @@ def drawWalls():
             f=sectors[sidedefs[linedef[5]][5]][0]
             c=sectors[sidedefs[linedef[5]][5]][1]
 
-            glColor4f(f/255, c/255, c/255, 1)
+            glColor4f(f/255-c/255, c/255-f/255, c/255-f/255, 1)
             glBegin(GL_QUADS)
             glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, f/20)
             glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, c/20)
