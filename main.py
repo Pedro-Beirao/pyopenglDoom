@@ -192,18 +192,14 @@ while run:
                 mouseMove = [event.pos[i] - displayCenter[i] for i in range(2)]
 
     if not paused:
-        # get keys
         keypress = pygame.key.get_pressed()
     
-        # init model view matrix
         glLoadIdentity()
 
-        # apply the look up and down
         if not keypress[pygame.K_q]:
             up_down_angle += mouseMove[1]*0.1
             glRotatef(up_down_angle, 1.0, 0.0, 0.0)
 
-        # init the view matrix
         glPushMatrix()
         glLoadIdentity()
 

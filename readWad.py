@@ -431,3 +431,10 @@ def findFlats():
     return flatsIndexes
 
 
+"""
+from PIL import Image
+import numpy as np
+a = np.random.random((64,64))
+img = Image.fromarray(a*255) 
+img.show()
+"""
