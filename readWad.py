@@ -1,5 +1,6 @@
 import struct
 import sys
+import random
 
 wadPath = ""
 
@@ -416,19 +417,56 @@ def findF_END():
             return i
     return -1
 
+def findP_START():
+    for i in range(directoryCount):
+        name = read8bytes(directoryOffset + i * 16 + 8)
+        if name.rstrip('\0') == "P_START":
+            return i
+    return -1
+
+def findP_END():
+    for i in range(directoryCount):
+        name = read8bytes(directoryOffset + i * 16 + 8)
+        if name.rstrip('\0') == "P_END":
+            return i
+    return -1
+
 def findFlats():
-    flatsIndexes=[]
+    flatsName=[]
+    flatsRGB=[]
     playpal = readPlaypal()
+    a=0
     for t in range(findF_START()+2,findF_END()):
         offset = read4bytes(directoryOffset + t * 16)
         size = read4bytes(directoryOffset + t * 16 + 4)
         name = read8bytes(directoryOffset + t * 16 + 8)
         if name[2] != "_":
+            a+=1
             c=[]
             for i in range(4096):
                 c += [playpal[read1byte(offset + i)]]
-            flatsIndexes.append([name.rstrip("\x00"),t,c])
-    return flatsIndexes
+            flatsName.append(name.rstrip("\x00"))
+            flatsRGB.append((random.random(),random.random(),random.random()))
+    return [flatsName,flatsRGB]
+
+def findTextures():
+    texturesName=[]
+    texturesRGB=[]
+    playpal = readPlaypal()
+    a=0
+    for t in range(findP_START()+2,findP_END()):
+        offset = read4bytes(directoryOffset + t * 16)
+        size = read4bytes(directoryOffset + t * 16 + 4)
+        name = read8bytes(directoryOffset + t * 16 + 8)
+        if name[2] != "_":
+            a+=1
+            c=[]
+            for i in range(4096):
+                c += [playpal[read1byte(offset + i)]]
+            texturesName.append(name.rstrip("\x00"))
+            texturesRGB.append((random.random(),random.random(),random.random()))
+    return [texturesName,texturesRGB]
+
 
 
 """

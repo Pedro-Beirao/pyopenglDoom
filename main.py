@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+import random
 
 things = readWad.readMapThings()
 vertexes = readWad.readMapVertex()
@@ -16,12 +17,64 @@ if readWad.useGLnodes():
     glsegs = readWad.readMapGLSegs()
     glsubsectors = readWad.readMapGLSubsectors()
 
+textures = readWad.findTextures()
+flats = readWad.findFlats()
+
+rgbList=[]
+for i in range(200):
+    rgbList.append([random.random(),random.random(),random.random()])
+
+ttt=[]
+for linedef in linedefs:
+    if not sidedefs[linedef[5]][4] in ttt:
+        ttt+= [sidedefs[linedef[5]][4]]
+
 def getPlayerPosition():
     for thing in things:
         if thing[3] == 1:
             return [thing[0], thing[1]]
-    
 
+playerStart = getPlayerPosition()
+px=playerStart[0]
+py=playerStart[1]
+
+glFloor = []
+
+#color profiles:
+#0: black floor random walls
+#1: yellow floor blue walls
+colorProfile=0
+
+if readWad.useGLnodes():
+    for glsubsector in glsubsectors:
+        v=[]
+        f=0
+        c=0
+        for size in range(glsubsector[0]):
+            vx=0
+            vy=0
+            if glsegs[glsubsector[1]+size][1]==0:
+                vx=vertexes[glsegs[glsubsector[1]+size][0]]
+                v+=[[(vx[0]-px)/20,(vx[1]-py)/20]]
+            else:
+                vx=glvertexes[glsegs[glsubsector[1]+size][0]]
+                v+=[[(vx[0]-px)/20,(vx[1]-py)/20]]
+            if glsegs[glsubsector[1]+size][3]==0:
+                vy=vertexes[glsegs[glsubsector[1]+size][2]]
+                v+=[[(vy[0]-px)/20,(vy[1]-py)/20]]
+            else:
+                vy=glvertexes[glsegs[glsubsector[1]+size][2]]
+                v+=[[(vy[0]-px)/20,(vy[1]-py)/20]]
+            if glsegs[glsubsector[1]+size][4] != 65535:
+                if glsegs[glsubsector[1]+size][5]==0:
+                    f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][0]
+                    c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][1]
+                else:
+                    f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][0]
+                    c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][1]
+        glFloor+=[[v,f,c]]
+
+    
 def drawWalls():
     glFrontFace(GL_CW)
     glCullFace(GL_BACK)
@@ -32,13 +85,18 @@ def drawWalls():
             glEnable(GL_CULL_FACE)
             f=sectors[sidedefs[linedef[5]][5]][0]
             c=sectors[sidedefs[linedef[5]][5]][1]
-
-            glColor4f(f/255-c/255, c/255-f/255, c/255-f/255, 1)
+            color=[]
+            if colorProfile==0:
+                color=rgbList[ttt.index(sidedefs[linedef[5]][4])]
+            elif colorProfile==1:
+                color=[f/255-c/255, c/255-f/255, c/255-f/255]
+            
+            glColor4f(color[0], color[1], color[2], 1)
             glBegin(GL_QUADS)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, f/20)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, c/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, c/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, f/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, f/20)
             glEnd()
         else:
             glDisable(GL_CULL_FACE)
@@ -47,70 +105,52 @@ def drawWalls():
             c1=sectors[sidedefs[linedef[5]][5]][1]
             c2=sectors[sidedefs[linedef[6]][5]][1]
 
-            glColor4f(f1/255, c1/255, c1/255, 1)
+            color=[]
+            if colorProfile==0:
+                color=rgbList[ttt.index(sidedefs[linedef[5]][4])]
+            elif colorProfile==1:
+                color=[f1/255, c1/255, c1/255]
+            
+            glColor4f(color[0], color[1], color[2], 1)
             glBegin(GL_QUADS)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, f1/20)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, f2/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, f2/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, f1/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f1/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f2/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, f2/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, f1/20)
             glEnd()
 
-            glColor4f(f2/255, c2/255, c2/255, 1)
+            glColor4f(color[0], color[1], color[2], 1)
             glBegin(GL_QUADS)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, c1/20)
-            glVertex3f((l[0]-1000)/20, (l[1]+3000)/20, c2/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, c2/20)
-            glVertex3f((r[0]-1000)/20, (r[1]+3000)/20, c1/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c1/20)
             glEnd()
 
             glEnable(GL_CULL_FACE)
 
 
 def drawFloor():
+    glPolygonMode(GL_FRONT,GL_FILL)
     if readWad.useGLnodes():
-        for glsubsector in glsubsectors:
-            v=[]
-            f=0
-            c=0
-            for size in range(glsubsector[0]):
-                    vx=0
-                    vy=0
-                    if glsegs[glsubsector[1]+size][1]==0:
-                        vx=vertexes[glsegs[glsubsector[1]+size][0]]
-                        v+=[[(vx[0]-1000)/20,(vx[1]+3000)/20]]
-                    else:
-                        vx=glvertexes[glsegs[glsubsector[1]+size][0]]
-                        v+=[[(vx[0]-1000)/20,(vx[1]+3000)/20]]
-                    if glsegs[glsubsector[1]+size][3]==0:
-                        vy=vertexes[glsegs[glsubsector[1]+size][2]]
-                        v+=[[(vy[0]-1000)/20,(vy[1]+3000)/20]]
-                    else:
-                        vy=glvertexes[glsegs[glsubsector[1]+size][2]]
-                        v+=[[(vy[0]-1000)/20,(vy[1]+3000)/20]]
-                    if glsegs[glsubsector[1]+size][4] != 65535:
-                        if glsegs[glsubsector[1]+size][5]==0:
-                            f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][0]
-                            c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][1]
-                        else:
-                            f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][0]
-                            c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][1]
-
-            glColor4f(1, 1, 0, 1)
+        for se in glFloor:
+            image=[0,0,0,100,100,100]
+            glColor4f(0, 0, 0, 1)
             glCullFace(GL_BACK)
             glBegin(GL_TRIANGLE_FAN)
-            for s in v:
-                glVertex3f(s[0],s[1],f/20)
+            for s in se[0]:
+                    glVertex3f(s[0],s[1],se[1]/20)
             glEnd()
-
-            glColor4f(0, .2, .2, 1)
+        for se in glFloor:
+            glColor4f(0, 0, 0, 1)
             glCullFace(GL_FRONT)
             glBegin(GL_TRIANGLE_FAN)
-            for s in v:
-                glVertex3f(s[0],s[1],c/20)
+            for s in se[0]:
+                    glVertex3f(s[0],s[1],se[2]/20)
             glEnd()
     else:
         for subsector in subsectors:
-            glColor4f(1, 1, 0, 1)
+            glColor4f(0, 0, 0, 1)
             glCullFace(GL_BACK)
             glBegin(GL_TRIANGLE_FAN)
             f=0
@@ -121,11 +161,11 @@ def drawFloor():
                     f=sectors[sidedefs[linedefs[segs[subsector[1]+size][3]][5]][5]][0]
                 else:
                     f= sectors[sidedefs[linedefs[segs[subsector[1]+size][3]][6]][5]][0]
-                glVertex3f((vx[0]-1000)/20,(vx[1]+3000)/20,f/30)
-                glVertex3f((vy[0]-1000)/20,(vy[1]+3000)/20,f/30)
+                glVertex3f((vx[0]-px)/20,(vx[1]-py)/20,f/30)
+                glVertex3f((vy[0]-px)/20,(vy[1]-py)/20,f/30)
             glEnd()
 
-            glColor4f(1, 0, 1, 1)
+            glColor4f(0, 0, 0, 1)
             glCullFace(GL_FRONT)
             glBegin(GL_TRIANGLE_FAN)
             f=0
@@ -136,8 +176,8 @@ def drawFloor():
                     c=sectors[sidedefs[linedefs[segs[subsector[1]+size][3]][5]][5]][1]
                 else:
                     c= sectors[sidedefs[linedefs[segs[subsector[1]+size][3]][6]][5]][1]
-                glVertex3f((vx[0]-1000)/20,(vx[1]+3000)/20,c/30)
-                glVertex3f((vy[0]-1000)/20,(vy[1]+3000)/20,c/30)
+                glVertex3f((vx[0]-px)/20,(vx[1]-py)/20,c/30)
+                glVertex3f((vy[0]-px)/20,(vy[1]-py)/20,c/30)
             glEnd()
 
 
@@ -178,6 +218,8 @@ run = True
 
 clock = pygame.time.Clock()
 while run:
+    deltaTime=clock.get_fps()/90
+    if deltaTime==0: deltaTime=0.1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -204,11 +246,11 @@ while run:
         glLoadIdentity()
 
 
-        speed=.3
+        speed=.3/deltaTime
 
         # apply the movment 
         if keypress[pygame.K_LSHIFT]:
-            speed=1
+            speed=1/deltaTime
         if keypress[pygame.K_w]:
             glTranslatef(0,0,speed)
         if keypress[pygame.K_s]:
@@ -223,6 +265,11 @@ while run:
             glTranslatef(0,speed/2,0)
         if not keypress[pygame.K_q]: 
             glRotatef(mouseMove[0]*0.2, 0.0, 1.0, 0.0) 
+        if keypress[pygame.K_t]: 
+            if colorProfile<1:
+                colorProfile+=1
+            else:
+                colorProfile=0
 
 
         # multiply the current matrix by the get the new view matrix and store the final vie matrix 
@@ -241,14 +288,6 @@ while run:
 
         drawWalls()
         drawFloor()
-
-        #glColor4f(1, 1, 1, 1)
-        #glBegin(GL_TRIANGLE_FAN)
-        #glVertex3f(1, 1, 1)
-        #glVertex3f(100, 100, 100)
-        #glVertex3f(100, -100, -100)
-        #glVertex3f(-100, 0, -100)
-        #glEnd()
 
         glPopMatrix()
 
