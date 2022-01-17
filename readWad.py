@@ -134,7 +134,7 @@ def readNodeData(offset):
             read2bytes(offset + 20), #left box left
             read2bytes(offset + 22), #left box right
             read2bytes(offset + 24), #right child
-            read2bytes(offset + 26) #left child
+            read2bytes(offset + 26), #left child
     ]
 
 def readSectorData(offset):
@@ -176,6 +176,22 @@ def readGLSubsectorData(offset):
             read2bytesGL(offset + 2) #no clue what this is, the documentation sucks
     ]
 
+def readGLNodeData(offset):
+    return [read2bytesGL(offset), #x
+            read2bytesGL(offset + 2), #y
+            read2bytesGL(offset + 4), #dx
+            read2bytesGL(offset + 6), #dy
+            read2bytesGL(offset + 8), #right box top
+            read2bytesGL(offset + 10), #right box bottom
+            read2bytesGL(offset + 12), #right box left
+            read2bytesGL(offset + 14), #right box right
+            read2bytesGL(offset + 16), #left box top
+            read2bytesGL(offset + 18), #left box bottom
+            read2bytesGL(offset + 20), #left box left
+            read2bytesGL(offset + 22), #left box right
+            read2bytesGL(offset + 24), #right child
+            read2bytesGL(offset + 26), #left child
+    ]
 
 
 
@@ -334,7 +350,7 @@ def readMapSidedefs(): #sectors = map + 3
         lis.append(d)
     return lis
 
-def readMapGLVertex(): #glvertex = map + 12
+def readMapGLVertex(): #glvertex = map + 1
     offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+1) * 16)
     size = read4bytesGL(directoryOffsetGL + (mapIndexGL+1) * 16 + 4)
     numberOfVertex = size / 8
@@ -348,7 +364,7 @@ def readMapGLVertex(): #glvertex = map + 12
         vertexList.append([d[1],d[3]])
     return vertexList
 
-def readMapGLSegs(): #glsegs = map + 13
+def readMapGLSegs(): #glsegs = map + 2
     offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+2) * 16)
     size = read4bytesGL(directoryOffsetGL + (mapIndexGL+2) * 16 + 4)
     numberOfVertex = size / 10
@@ -358,13 +374,47 @@ def readMapGLSegs(): #glsegs = map + 13
         lis.append(d)
     return lis
 
-def readMapGLSubsectors(): #glsubsectors = map + 14
+def readMapGLSubsectors(): #glsubsectors = map + 3
     offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+3) * 16)
     size = read4bytesGL(directoryOffsetGL + (mapIndexGL+3) * 16 + 4)
     numberOf = size / 4
     lis = []
     for i in range(int(numberOf)):
         d = readGLSubsectorData(offset + i * 4)
+        lis.append(d)
+    return lis
+
+def readMapGLNodes(): #glnodes = map + 4
+    offset = read4bytesGL(directoryOffsetGL + (mapIndexGL+4) * 16)
+    size = read4bytesGL(directoryOffsetGL + (mapIndexGL+4) * 16 + 4)
+    numberOf = size / 28
+    lis = []
+    for i in range(int(numberOf)):
+        d = readGLNodeData(offset + i * 28)
+        if d[0] > 65536/2:
+            d[0] = d[0] - 65536
+        if d[1] > 65536/2:
+            d[1] = d[1] - 65536
+        if d[2] > 65536/2:
+            d[2] = d[2] - 65536
+        if d[3] > 65536/2:
+            d[3] = d[3] - 65536
+        if d[4] > 65536/2:
+            d[4] = d[4] - 65536
+        if d[5] > 65536/2:
+            d[5] = d[5] - 65536
+        if d[6] > 65536/2:
+            d[6] = d[6] - 65536
+        if d[7] > 65536/2:
+            d[7] = d[7] - 65536
+        if d[8] > 65536/2:
+            d[8] = d[8] - 65536
+        if d[9] > 65536/2:
+            d[9] = d[9] - 65536
+        if d[10] > 65536/2:
+            d[10] = d[10] - 65536
+        if d[11] > 65536/2:
+            d[11] = d[11] - 65536
         lis.append(d)
     return lis
 
@@ -443,10 +493,10 @@ def findFlats():
         if name[2] != "_":
             a+=1
             c=[]
+            flatsName.append(name.rstrip("\x00"))
             for i in range(4096):
                 c += [playpal[read1byte(offset + i)]]
-            flatsName.append(name.rstrip("\x00"))
-            flatsRGB.append((random.random(),random.random(),random.random()))
+                flatsRGB.append((playpal[read1byte(offset + i)][0],playpal[read1byte(offset + i)][1],playpal[read1byte(offset + i)][2]))
     return [flatsName,flatsRGB]
 
 def findTextures():
