@@ -449,7 +449,7 @@ def readPlaypal():
     playPal1Size = size / 14
     playpal=[]
     for c in range(256):
-        playpal+=[(read1byte(offset + c * 3),read1byte(offset + c * 3 + 1),read1byte(offset + c * 3 + 2))]
+        playpal+=[[read1byte(offset + c * 3),read1byte(offset + c * 3 + 1),read1byte(offset + c * 3 + 2)]]
     return playpal
 
 
@@ -482,8 +482,7 @@ def findP_END():
     return -1
 
 def findFlats():
-    flatsName=[]
-    flatsRGB=[]
+    flats={}
     playpal = readPlaypal()
     a=0
     for t in range(findF_START()+2,findF_END()):
@@ -493,36 +492,78 @@ def findFlats():
         if name[2] != "_":
             a+=1
             c=[]
-            flatsName.append(name.rstrip("\x00"))
-            for i in range(4096):
-                c += [playpal[read1byte(offset + i)]]
-                flatsRGB.append((playpal[read1byte(offset + i)][0],playpal[read1byte(offset + i)][1],playpal[read1byte(offset + i)][2]))
-    return [flatsName,flatsRGB]
+            cc=[]
+            for i in range(64):
+                for l in range(64):
+                    c += [playpal[read1byte(offset + i * 64 + l)]]
+                cc += [c]
+                c=[]
+            flats[name.rstrip("\x00")] = cc
+    return flats
 
-def findTextures():
-    texturesName=[]
-    texturesRGB=[]
-    playpal = readPlaypal()
+def findTextures(texture1):
+    textures={}
     a=0
+    playpal = readPlaypal()
     for t in range(findP_START()+2,findP_END()):
         offset = read4bytes(directoryOffset + t * 16)
         size = read4bytes(directoryOffset + t * 16 + 4)
-        name = read8bytes(directoryOffset + t * 16 + 8)
+        name = read8bytes(directoryOffset + t * 16 + 8).rstrip('\x00')
         if name[2] != "_":
             a+=1
             c=[]
-            for i in range(4096):
-                c += [playpal[read1byte(offset + i)]]
-            texturesName.append(name.rstrip("\x00"))
-            texturesRGB.append((random.random(),random.random(),random.random()))
-    return [texturesName,texturesRGB]
+            cc=[]
+            try:
+                patch = texture1[name]
+                for i in range(patch[1]):
+                    for l in range(patch[0]):
+                        c += [playpal[read1byte(offset + i * 64 + l)]]
+                    cc += [c]
+                    c=[]
+                textures[patch[2]] = cc
+            except:
+                pass
+    return textures
 
+def findPnames():
+    pnames=[]
+    for i in range(directoryCount):
+        offset = read4bytes(directoryOffset + i * 16)
+        size = read4bytes(directoryOffset + i * 16 + 4)
+        name = read8bytes(directoryOffset + i * 16 + 8).rstrip('\x00')
+        if name == "PNAMES":
+            count = read4bytes(offset)
+            for i in range(count):
+                pnames += [read8bytes(offset + 4 + i * 8)]
+    return pnames
 
+def searchTexture1(pnames):
+    texture1={}
+    for i in range(directoryCount):
+        offset = read4bytes(directoryOffset + i * 16)
+        size = read4bytes(directoryOffset + i * 16 + 4)
+        name = read8bytes(directoryOffset + i * 16 + 8).rstrip('\x00')
+        if name == "TEXTURE1":
+            count = read4bytes(offset)
+            offsets = []
+            for i in range(count):
+                offsets.append(read4bytes(offset + 4 + i * 4))
+                tex = offset + read4bytes(offset + 4 + i * 4)
+                tname = read8bytes(tex).rstrip('\x00')
+                width = read2bytes(tex + 12)
+                height = read2bytes(tex + 14)
+                index = read2bytes(tex + 26)
+                texture1[pnames[index].rstrip('\x00')] = [width,height,tname]
+    return texture1
 
-"""
-from PIL import Image
-import numpy as np
-a = np.random.random((64,64))
-img = Image.fromarray(a*255) 
-img.show()
-"""
+# pnames = findPnames()
+# texture1 =  searchTexture1(pnames)
+# print(findTextures(texture1))
+
+# flats = findFlats()
+# print(len(flats[1][0]))
+# from PIL import Image
+# import numpy as np
+# a = np.array(flats[1][0], dtype=np.uint8)
+# img = Image.fromarray(a) 
+# img.show()

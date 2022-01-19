@@ -19,22 +19,15 @@ if readWad.useGLnodes():
     glnodes = readWad.readMapGLNodes()
 
 
+mapX=100
+mapY=600
+zoom=20
+
+startPos = [0,0]
 
 pygame.init()
 display = (1000, 600)
 scree = pygame.display.set_mode(display)
-
-def getStartPosition():
-    for thing in things:
-        if thing[3] == 1:
-            return [thing[0], thing[1]]
-
-startPos = getStartPosition()
-print(startPos)
-mapX=100 #(500-startPos[0]/10)
-mapY=600 #(300+startPos[1]/10)
-print(mapX,mapY)
-zoom=20
 
 def isOnleftSide(x, y, node):
     dx = x - node[0]
@@ -187,86 +180,92 @@ def chooseType():
         print("Invalid input")
         chooseType()
 
-renderType = chooseType()
+def getStartPosition():
+        for thing in things:
+            if thing[3] == 1:
+                return [thing[0], thing[1]]
 
-# init mouse movement and center mouse on screen
-displayCenter = [500,300]
-mouseMove = [0, 0]
-pygame.mouse.set_pos(displayCenter)
+def main():
+    global startPos, zoom, mapX, mapY
 
-paused = False
-run = True
-clock = pygame.time.Clock()
-curNode = len(glnodes)-1
-print(curNode)
-getTicksLastFrame=0
-tt=0
-while run:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+    startPos = getStartPosition()
+    renderType = chooseType()
+
+    # init mouse movement and center mouse on screen
+    displayCenter = [500,300]
+    mouseMove = [0, 0]
+    pygame.mouse.set_pos(displayCenter)
+
+    paused = False
+    run = True
+    clock = pygame.time.Clock()
+    curNode = len(glnodes)-1
+    print(curNode)
+    getTicksLastFrame=0
+    tt=0
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 run = False
-            if event.key == pygame.K_PAUSE or event.key == pygame.K_p:
-                paused = not paused
-                pygame.mouse.set_pos(displayCenter)   
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
-                mapY += 100
-            if event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                mapY -= 100
-            if event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                mapX += 100
-            if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                mapX -= 100
-            if event.key == pygame.K_r:
-                mapX = 100
-                mapY = 500
-            if event.key == pygame.K_PLUS:
-                zoom -= 2
-            if event.key == pygame.K_MINUS:
-                zoom += 2
-            if event.key == pygame.K_RETURN:
-                renderType = chooseType()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+                if event.key == pygame.K_PAUSE or event.key == pygame.K_p:
+                    paused = not paused
+                    pygame.mouse.set_pos(displayCenter)   
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    mapY += 100
+                if event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    mapY -= 100
+                if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                    mapX += 100
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    mapX -= 100
+                if event.key == pygame.K_r:
+                    mapX = 100
+                    mapY = 500
+                if event.key == pygame.K_PLUS:
+                    zoom -= 2
+                if event.key == pygame.K_MINUS:
+                    zoom += 2
+                if event.key == pygame.K_RETURN:
+                    renderType = chooseType()
 
-    if not paused:
-        # get keys
-        scree.fill((0,0,0))
-        keypress = pygame.key.get_pressed()
-        #mouseMove = pygame.mouse.get_rel()
+        if not paused:
+            # get keys
+            scree.fill((0,0,0))
+            keypress = pygame.key.get_pressed()
+            #mouseMove = pygame.mouse.get_rel()
 
-        if renderType==1 or renderType==3 or renderType==4:
-            drawWalls()
+            if renderType==1 or renderType==3 or renderType==4:
+                drawWalls()
 
-        drawPlayerDot()
+            drawPlayerDot()
 
-        t = pygame.time.get_ticks()
-        deltaTime = (t - getTicksLastFrame) / 1000.0
-        getTicksLastFrame = t
-        tt+=deltaTime
-        if renderType==4:
-            if(tt>1):
-                if int(curNode & 0x8000):
-                    tt=0
-                    curNode = len(glnodes)-1
+            t = pygame.time.get_ticks()
+            deltaTime = (t - getTicksLastFrame) / 1000.0
+            getTicksLastFrame = t
+            tt+=deltaTime
+            if renderType==4:
+                if(tt>1):
+                    if int(curNode & 0x8000):
+                        tt=0
+                        curNode = len(glnodes)-1
+                    else:
+                        curNode = searchForPlayer(glnodes[curNode])
+                        tt=0
                 else:
-                    curNode = searchForPlayer(glnodes[curNode])
-                    tt=0
-            else:
-                if not int(curNode & 0x8000):
-                    drawNode(glnodes[curNode])
+                    if not int(curNode & 0x8000):
+                        drawNode(glnodes[curNode])
 
 
-        #drawSegs()
-        #drawSubsectors()
-        #drawGLSubsectors()
-        #debug1(drawGLSubsector[76])
-        #drawSectors()
+            #drawSegs()
+            #drawSubsectors()
+            #drawGLSubsectors()
+            #debug1(drawGLSubsector[76])
+            #drawSectors()
 
-        pygame.display.flip()
-        clock.tick()
-        pygame.display.set_caption("fps: " + str(clock.get_fps()))
-
-
-
-pygame.quit()
+            pygame.display.flip()
+            clock.tick()
+            pygame.display.set_caption("fps: " + str(clock.get_fps()))
+    pygame.quit()
