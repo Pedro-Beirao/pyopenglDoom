@@ -87,13 +87,13 @@ def drawWalls():
             try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][4]])
             except: pass
             glBegin(GL_QUADS)
-            glTexCoord3f(0, 0,f/20)
+            glTexCoord2f(0, 1)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
-            glTexCoord3f(0, c/20)
+            glTexCoord2f(0, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c/20)
-            glTexCoord3f(1, c/20)
+            glTexCoord2f(2, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c/20)
-            glTexCoord3f(1, f/20)
+            glTexCoord2f(2, 1)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f/20)
             glEnd()
         else:
