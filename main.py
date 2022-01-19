@@ -10,5 +10,7 @@ def chooseRender():
 
 if chooseRender() == 3:
     import render3d
+    render3d.main()
 else:
     import render2d
+    render2d.main()
