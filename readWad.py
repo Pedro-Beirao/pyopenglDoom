@@ -513,11 +513,15 @@ def findTextures(texture1):
             a+=1
             c=[]
             cc=[]
+            width=read2bytes(offset)
+            height=read2bytes(offset + 2)
             try:
                 patch = texture1[name]
-                for i in range(patch[1]):
-                    for l in range(patch[0]):
-                        c += [playpal[read1byte(offset + i * 64 + l)]]
+                for i in range(width):
+                    newOffset = read4bytes(offset + 8 + i * 4)
+                    print(newOffset) 
+                    for l in range(height):
+                        c += [playpal[read1byte(newOffset + 1 + i * width + l)]]
                     cc += [c]
                     c=[]
                 textures[patch[2]] = cc
@@ -556,14 +560,14 @@ def searchTexture1(pnames):
                 texture1[pnames[index].rstrip('\x00')] = [width,height,tname]
     return texture1
 
-# pnames = findPnames()
-# texture1 =  searchTexture1(pnames)
-# print(findTextures(texture1))
+pnames = findPnames()
+texture1 =  searchTexture1(pnames)
+textures = findTextures(texture1)
 
-# flats = findFlats()
-# print(len(flats[1][0]))
-# from PIL import Image
-# import numpy as np
-# a = np.array(flats[1][0], dtype=np.uint8)
-# img = Image.fromarray(a) 
-# img.show()
+print(textures.keys())
+
+from PIL import Image
+import numpy as np
+a = np.array(textures["DOOR1"], dtype=np.uint8)
+img = Image.fromarray(a) 
+img.show()

@@ -143,7 +143,7 @@ def drawFloor():
     glPolygonMode(GL_FRONT,GL_FILL)
     if readWad.useGLnodes():
         for se in glFloor:
-            glColor4f(255, 255, 255, 1)
+            glColor4f(se[5]/255, se[5]/255, se[5]/255, 1)
             glBindTexture(GL_TEXTURE_2D, flats[se[3]])
             glCullFace(GL_BACK)
             glBegin(GL_TRIANGLE_FAN)
@@ -152,7 +152,7 @@ def drawFloor():
                     glVertex3f(s[0],s[1],se[1]/20)
             glEnd()
         for se in glFloor:
-            glColor4f(255, 255, 255, 1)
+            glColor4f(se[5]/255, se[5]/255, se[5]/255, 1)
             glBindTexture(GL_TEXTURE_2D, flats[se[4]])
             glCullFace(GL_FRONT)
             glBegin(GL_TRIANGLE_FAN)
@@ -206,6 +206,7 @@ def loadFlat(path):
     texture = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     glBindTexture(GL_TEXTURE_2D, texture)
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -216,34 +217,19 @@ def loadFlat(path):
     return texture
 
 def loadTexture(path):
-    try: 
-        a = numpy.array(textures[path], dtype=numpy.uint8)
-        img_data = numpy.fromstring(a.tobytes(), dtype=numpy.uint8) 
-        width, height = len(textures[path][0]), len(textures[path])
-        texture = glGenTextures(1)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-        glBindTexture(GL_TEXTURE_2D, texture)
-        # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
-            GL_RGB, GL_UNSIGNED_BYTE, img_data)
-        glGenerateMipmap(GL_TEXTURE_2D)
-    except:
-        a = numpy.array(textures["BROWN1"], dtype=numpy.uint8)
-        img_data = numpy.fromstring(a.tobytes(), dtype=numpy.uint8) 
-        width, height = len(textures[path][0]), len(textures[path])
-        texture = glGenTextures(1)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-        glBindTexture(GL_TEXTURE_2D, texture)
-        # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
-            GL_RGB, GL_UNSIGNED_BYTE, img_data)
-        glGenerateMipmap(GL_TEXTURE_2D)
+    a = numpy.array(textures[path], dtype=numpy.uint8)
+    img_data = numpy.fromstring(a.tobytes(), dtype=numpy.uint8) 
+    width, height = len(textures[path][0]), len(textures[path])
+    texture = glGenTextures(1)
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+    glBindTexture(GL_TEXTURE_2D, texture)
+    # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, img_data)
+    glGenerateMipmap(GL_TEXTURE_2D)
     return texture
 
 flatList = list(flats.keys())
@@ -269,14 +255,10 @@ def main():
             v=[]
             f=0
             c=0
-            t=""
+            l=200
             for size in range(glsubsector[0]):
                 vx=0
                 vy=0
-                try:
-                    tf=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][2]
-                    tc=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][3]
-                except: pass
                 if glsegs[glsubsector[1]+size][1]==0:
                     vx=vertexes[glsegs[glsubsector[1]+size][0]]
                     v+=[[(vx[0]-px)/20,(vx[1]-py)/20]]
@@ -290,13 +272,19 @@ def main():
                     vy=glvertexes[glsegs[glsubsector[1]+size][2]]
                     v+=[[(vy[0]-px)/20,(vy[1]-py)/20]]
                 if glsegs[glsubsector[1]+size][4] != 65535:
+                    l=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][4]-50
                     if glsegs[glsubsector[1]+size][5]==0:
                         f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][0]-hhh
                         c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][1]-hhh
+                        tf=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][2]
+                        tc=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][3]
                     else:
                         f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][0]-hhh
                         c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][1]-hhh
-            glFloor+=[[v,f,c,tf,tc]]
+                        if linedefs[glsegs[glsubsector[1]+size][4]][6]!=65535:
+                            tf=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][2]
+                            tc=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][3]
+            glFloor+=[[v,f,c,tf,tc,l]]
         
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_LIGHTING)
