@@ -91,9 +91,9 @@ def drawWalls():
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
             glTexCoord2f(0, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c/20)
-            glTexCoord2f(2, 0)
+            glTexCoord2f(1, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c/20)
-            glTexCoord2f(2, 1)
+            glTexCoord2f(1, 1)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f/20)
             glEnd()
         else:

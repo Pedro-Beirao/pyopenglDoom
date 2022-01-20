@@ -513,15 +513,15 @@ def findTextures(texture1):
             a+=1
             c=[]
             cc=[]
-            width=read2bytes(offset)
-            height=read2bytes(offset + 2)
+            width = read2bytes(offset)
+            height = read2bytes(offset + 2)
             try:
                 patch = texture1[name]
                 for i in range(width):
-                    newOffset = read4bytes(offset + 8 + i * 4)
+                    newOffset = offset + read4bytes(offset + 8 + i * 4)
                     print(newOffset) 
                     for l in range(height):
-                        c += [playpal[read1byte(newOffset + 1 + i * width + l)]]
+                        c += [playpal[read1byte(newOffset + 1 + l)]]
                     cc += [c]
                     c=[]
                 textures[patch[2]] = cc
