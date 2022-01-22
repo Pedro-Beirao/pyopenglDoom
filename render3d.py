@@ -7,6 +7,20 @@ import random
 import math
 from PIL import Image
 import numpy
+import sys
+import os
+
+isSussu=False
+isImage=False
+for arg in sys.argv:
+    if arg == '-sussu':
+        import images
+        isSussu=True
+        image = numpy.array(images.sussu, dtype=numpy.uint8)
+    elif arg == '-image':
+        isImage=True
+        img = Image.open(os.path.dirname(os.path.realpath(__file__))+'/image.png')
+        image = numpy.array(img, dtype=numpy.uint8)
 
 things = readWad.readMapThings()
 vertexes = readWad.readMapVertex()
@@ -83,6 +97,7 @@ def drawWalls():
             #     color=rgbList[ttt.index(sidedefs[linedef[5]][4])]
             # elif colorProfile==1:
             #     color=[f/255-c/255, c/255-f/255, c/255-f/255]
+            dist = math.sqrt(((r[0]-px)-(l[0]-px))**2+((r[1]-px)-(l[1]-px))**2)
             glColor4f(255, 255, 255, 1)
             try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][4]])
             except: pass
@@ -91,9 +106,9 @@ def drawWalls():
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
             glTexCoord2f(0, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c/20)
-            glTexCoord2f(1, 0)
+            glTexCoord2f(dist/64, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c/20)
-            glTexCoord2f(1, 1)
+            glTexCoord2f(dist/64, 1)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f/20)
             glEnd()
         else:
@@ -112,13 +127,13 @@ def drawWalls():
             try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][3]])
             except: pass
             glBegin(GL_QUADS)
-            glTexCoord2f(1, 0)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f1/20)
-            glTexCoord2f(1, 1)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f2/20)
-            glTexCoord2f(0, 0)
-            glVertex3f((r[0]-px)/20, (r[1]-py)/20, f2/20)
             glTexCoord2f(0, 1)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f1/20)
+            glTexCoord2f(0, 0)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, f2/20)
+            glTexCoord2f(1, 0)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, f2/20)
+            glTexCoord2f(1, 1)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f1/20)
             glEnd()
 
@@ -126,13 +141,13 @@ def drawWalls():
             try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][2]])
             except: pass
             glBegin(GL_QUADS)
-            glTexCoord2f(1, 0)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
-            glTexCoord2f(1, 1)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
-            glTexCoord2f(0, 0)
-            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
             glTexCoord2f(0, 1)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
+            glTexCoord2f(0, 0)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
+            glTexCoord2f(1, 0)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
+            glTexCoord2f(1, 1)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c1/20)
             glEnd()
 
@@ -200,15 +215,20 @@ scree = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 def loadFlat(path):
     # img = Image.open(path)
     # img_data = numpy.fromstring(img.tobytes(), dtype=numpy.uint8)
-    a = numpy.array(flats[path], dtype=numpy.uint8)
+    if(isSussu or isImage):
+        a = image
+    else:
+        a = numpy.array(flats[path], dtype=numpy.uint8)
     img_data = numpy.fromstring(a.tobytes(), dtype=numpy.uint8) 
-    width, height = 64, 64
+    width, height = numpy.shape(a)[1], numpy.shape(a)[0]
     texture = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     glBindTexture(GL_TEXTURE_2D, texture)
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
@@ -217,16 +237,24 @@ def loadFlat(path):
     return texture
 
 def loadTexture(path):
-    a = numpy.array(textures[path], dtype=numpy.uint8)
+    if(isSussu or isImage):
+        a = image
+    else:
+        a = numpy.array(textures[path], dtype=numpy.uint8)
+        a = numpy.rot90(a, 3)
     img_data = numpy.fromstring(a.tobytes(), dtype=numpy.uint8) 
-    width, height = len(textures[path][0]), len(textures[path])
+    width, height = numpy.shape(a)[1], numpy.shape(a)[0]
+    # width, height = len(textures[path][0]), len(textures[path])
     texture = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-    glBindTexture(GL_TEXTURE_2D, texture)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glBindTexture(GL_TEXTURE_2D, texture)
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
         GL_RGB, GL_UNSIGNED_BYTE, img_data)
     glGenerateMipmap(GL_TEXTURE_2D)

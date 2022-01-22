@@ -538,7 +538,7 @@ def findPnames():
         if name == "PNAMES":
             count = read4bytes(offset)
             for i in range(count):
-                pnames += [read8bytes(offset + 4 + i * 8)]
+                pnames += [read8bytes(offset + 4 + i * 8).rstrip('\x00')]
     return pnames
 
 def searchTexture1(pnames):
@@ -562,12 +562,15 @@ def searchTexture1(pnames):
 
 pnames = findPnames()
 texture1 =  searchTexture1(pnames)
-textures = findTextures(texture1)
+# textures = findTextures(texture1)
 
-print(textures.keys())
+# print(textures.keys())
+# print(pnames)
+print(texture1.keys())
 
-from PIL import Image
-import numpy as np
-a = np.array(textures["DOOR1"], dtype=np.uint8)
-img = Image.fromarray(a) 
-img.show()
+# from PIL import Image
+# import numpy as np
+# a = np.array(textures["DOOR1"], dtype=np.uint8)
+# a = np.rot90(a, 3)
+# img = Image.fromarray(a) 
+# img.show()
