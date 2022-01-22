@@ -98,9 +98,10 @@ def drawWalls():
             # elif colorProfile==1:
             #     color=[f/255-c/255, c/255-f/255, c/255-f/255]
             dist = math.sqrt(((r[0]-px)-(l[0]-px))**2+((r[1]-px)-(l[1]-px))**2)
-            glColor4f(255, 255, 255, 1)
-            try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][4]])
-            except: pass
+            li=sectors[sidedefs[linedef[5]][5]][4]
+            glColor4f(li/255, li/255, li/255, 1)
+            if sidedefs[linedef[5]][4] != '-':
+                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][4].upper()])
             glBegin(GL_QUADS)
             glTexCoord2f(0, 1)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
@@ -117,15 +118,15 @@ def drawWalls():
             f2=sectors[sidedefs[linedef[6]][5]][0]-hhh
             c1=sectors[sidedefs[linedef[5]][5]][1]-hhh
             c2=sectors[sidedefs[linedef[6]][5]][1]-hhh
-
+            li=sectors[sidedefs[linedef[5]][5]][4]
             # color=[]
             # if colorProfile==0:
             #     color=rgbList[ttt.index(sidedefs[linedef[5]][4])]
             # elif colorProfile==1:
             #     color=[f1/255, c1/255, c1/255]
-            glColor4f(255, 255, 255, 1)
-            try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][3]])
-            except: pass
+            glColor4f(li/255, li/255, li/255, 1)
+            if sidedefs[linedef[5]][3] != '-':
+                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][3].upper()])
             glBegin(GL_QUADS)
             glTexCoord2f(0, 1)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f1/20)
@@ -137,17 +138,17 @@ def drawWalls():
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f1/20)
             glEnd()
 
-            glColor4f(255, 255, 255, 1)
-            try: glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][2]])
-            except: pass
+            glColor4f(li/255, li/255, li/255, 1)
+            if sidedefs[linedef[5]][2] != '-':
+                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][2].upper()])
             glBegin(GL_QUADS)
-            glTexCoord2f(0, 1)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
-            glTexCoord2f(0, 0)
-            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
             glTexCoord2f(1, 0)
-            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
             glTexCoord2f(1, 1)
+            glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
+            glTexCoord2f(0, 1)
+            glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
+            glTexCoord2f(0, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c1/20)
             glEnd()
 
@@ -163,7 +164,7 @@ def drawFloor():
             glCullFace(GL_BACK)
             glBegin(GL_TRIANGLE_FAN)
             for s in se[0]:
-                    glTexCoord2f (s[0]/2, s[1]/2)
+                    glTexCoord2f (s[0]/3, s[1]/3)
                     glVertex3f(s[0],s[1],se[1]/20)
             glEnd()
         for se in glFloor:
@@ -172,7 +173,7 @@ def drawFloor():
             glCullFace(GL_FRONT)
             glBegin(GL_TRIANGLE_FAN)
             for s in se[0]:
-                    glTexCoord2f (s[0]/2, s[1]/2)
+                    glTexCoord2f (s[0]/3, s[1]/3)
                     glVertex3f(s[0],s[1],se[2]/20)
             glEnd()
     else:
@@ -227,6 +228,8 @@ def loadFlat(path):
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
     # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -249,6 +252,8 @@ def loadTexture(path):
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
     # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -283,7 +288,7 @@ def main():
             v=[]
             f=0
             c=0
-            l=200
+            l=150
             for size in range(glsubsector[0]):
                 vx=0
                 vy=0
@@ -300,18 +305,19 @@ def main():
                     vy=glvertexes[glsegs[glsubsector[1]+size][2]]
                     v+=[[(vy[0]-px)/20,(vy[1]-py)/20]]
                 if glsegs[glsubsector[1]+size][4] != 65535:
-                    l=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][4]-50
                     if glsegs[glsubsector[1]+size][5]==0:
                         f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][0]-hhh
                         c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][1]-hhh
                         tf=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][2]
                         tc=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][3]
+                        l=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][5]][5]][4]
                     else:
                         f=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][0]-hhh
                         c=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][1]-hhh
                         if linedefs[glsegs[glsubsector[1]+size][4]][6]!=65535:
                             tf=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][2]
                             tc=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][3]
+                            l=sectors[sidedefs[linedefs[glsegs[glsubsector[1]+size][4]][6]][5]][4]
             glFloor+=[[v,f,c,tf,tc,l]]
         
     glEnable(GL_DEPTH_TEST)

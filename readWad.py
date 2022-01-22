@@ -515,18 +515,15 @@ def findTextures(texture1):
             cc=[]
             width = read2bytes(offset)
             height = read2bytes(offset + 2)
-            try:
-                patch = texture1[name]
-                for i in range(width):
-                    newOffset = offset + read4bytes(offset + 8 + i * 4)
-                    print(newOffset) 
-                    for l in range(height):
-                        c += [playpal[read1byte(newOffset + 1 + l)]]
-                    cc += [c]
-                    c=[]
-                textures[patch[2]] = cc
-            except:
-                pass
+            for i in range(width):
+                newOffset = offset + read4bytes(offset + 8 + i * 4)
+                for l in range(height):
+                    c += [playpal[read1byte(newOffset + 1 + l)]]
+                cc += [c]
+                c=[]
+            for t in range(len(list(texture1.keys()))):
+                if (list(texture1.values())[t][2]).upper() == name.upper():
+                    textures[list(texture1.keys())[t]] = cc
     return textures
 
 def findPnames():
@@ -549,24 +546,23 @@ def searchTexture1(pnames):
         name = read8bytes(directoryOffset + i * 16 + 8).rstrip('\x00')
         if name == "TEXTURE1":
             count = read4bytes(offset)
-            offsets = []
             for i in range(count):
-                offsets.append(read4bytes(offset + 4 + i * 4))
                 tex = offset + read4bytes(offset + 4 + i * 4)
                 tname = read8bytes(tex).rstrip('\x00')
                 width = read2bytes(tex + 12)
                 height = read2bytes(tex + 14)
                 index = read2bytes(tex + 26)
-                texture1[pnames[index].rstrip('\x00')] = [width,height,tname]
+                pnames[index]
+                texture1[tname] = [width,height,pnames[index].rstrip('\x00')]
     return texture1
 
 pnames = findPnames()
 texture1 =  searchTexture1(pnames)
-# textures = findTextures(texture1)
+textures = findTextures(texture1)
 
 # print(textures.keys())
 # print(pnames)
-print(texture1.keys())
+textures["TEKWALL4"]
 
 # from PIL import Image
 # import numpy as np
