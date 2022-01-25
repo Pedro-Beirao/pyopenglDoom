@@ -88,6 +88,7 @@ def drawWalls():
     for linedef in linedefs:
         l=vertexes[linedef[0]]
         r=vertexes[linedef[1]]
+        dist = math.sqrt(((r[0]-px)-(l[0]-px))**2+((r[1]-px)-(l[1]-px))**2)
         if linedef[6]==65535: 
             glEnable(GL_CULL_FACE)
             f=sectors[sidedefs[linedef[5]][5]][0]-hhh
@@ -97,19 +98,21 @@ def drawWalls():
             #     color=rgbList[ttt.index(sidedefs[linedef[5]][4])]
             # elif colorProfile==1:
             #     color=[f/255-c/255, c/255-f/255, c/255-f/255]
-            dist = math.sqrt(((r[0]-px)-(l[0]-px))**2+((r[1]-px)-(l[1]-px))**2)
             li=sectors[sidedefs[linedef[5]][5]][4]
             glColor4f(li/255, li/255, li/255, 1)
             if sidedefs[linedef[5]][4] != '-':
-                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][4].upper()])
+                t=textures[sidedefs[linedef[5]][4].upper()]
+                glBindTexture(GL_TEXTURE_2D, t[0])
+                wi = t[1]
+                he = t[2]
             glBegin(GL_QUADS)
-            glTexCoord2f(0, 1)
+            glTexCoord2f(0, (c-f)/he)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f/20)
             glTexCoord2f(0, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c/20)
-            glTexCoord2f(dist/64, 0)
+            glTexCoord2f(dist/wi, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c/20)
-            glTexCoord2f(dist/64, 1)
+            glTexCoord2f(dist/wi, (c-f)/he)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f/20)
             glEnd()
         else:
@@ -126,27 +129,33 @@ def drawWalls():
             #     color=[f1/255, c1/255, c1/255]
             glColor4f(li/255, li/255, li/255, 1)
             if sidedefs[linedef[5]][3] != '-':
-                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][3].upper()])
+                t=textures[sidedefs[linedef[5]][3].upper()]
+                glBindTexture(GL_TEXTURE_2D, t[0])
+                wi = t[1]
+                he = t[2]
             glBegin(GL_QUADS)
-            glTexCoord2f(0, 1)
+            glTexCoord2f(0, (f2-f1)/he)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f1/20)
             glTexCoord2f(0, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, f2/20)
-            glTexCoord2f(1, 0)
+            glTexCoord2f(dist/wi, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f2/20)
-            glTexCoord2f(1, 1)
+            glTexCoord2f(dist/wi, (f2-f1)/he)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, f1/20)
             glEnd()
 
             glColor4f(li/255, li/255, li/255, 1)
             if sidedefs[linedef[5]][2] != '-':
-                glBindTexture(GL_TEXTURE_2D, textures[sidedefs[linedef[5]][2].upper()])
+                t=textures[sidedefs[linedef[5]][2].upper()]
+                glBindTexture(GL_TEXTURE_2D, t[0])
+                wi = t[1]
+                he = t[2]
             glBegin(GL_QUADS)
-            glTexCoord2f(1, 0)
+            glTexCoord2f(dist/wi, 0)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c1/20)
-            glTexCoord2f(1, 1)
+            glTexCoord2f(dist/wi, (c2-c1)/he)
             glVertex3f((l[0]-px)/20, (l[1]-py)/20, c2/20)
-            glTexCoord2f(0, 1)
+            glTexCoord2f(0, (c2-c1)/he)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c2/20)
             glTexCoord2f(0, 0)
             glVertex3f((r[0]-px)/20, (r[1]-py)/20, c1/20)
@@ -263,7 +272,7 @@ def loadTexture(path):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
         GL_RGB, GL_UNSIGNED_BYTE, img_data)
     glGenerateMipmap(GL_TEXTURE_2D)
-    return texture
+    return [texture, width, height]
 
 flatList = list(flats.keys())
 for flat in range(len(flatList)):
