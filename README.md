@@ -16,7 +16,7 @@ Check out the [Guide](guide) to understand how all of this works
 python main.py path/to/doom.wad
 ```
 
-### Automap: 
+### 2D Renderer: 
 ```
 python main2d.py path/to/doom.wad
 ```
@@ -29,6 +29,7 @@ python main2d.py path/to/doom.wad
 
 - Pygame
 - PyOpenGL
+- Numpy
 
 ### Goals
 
