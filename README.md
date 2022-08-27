@@ -1,7 +1,6 @@
 #  PyOpenGL Doom
-## FPRO/LIEIC, 2021/22
-## Pedro Beirão (up202108718)
-## 1LIEIC03
+
+https://www.youtube.com/watch?v=eVUoO2087no
 
 ___
 
@@ -21,9 +20,6 @@ python main.py path/to/doom.wad
 python main2d.py path/to/doom.wad
 ```
 
-### Screenshots
-
-
 
 ### Libraries
 
@@ -36,5 +32,3 @@ python main2d.py path/to/doom.wad
 1. read data from a WAD file
 2. Draw the map in both 2d and 3d
 
-Repo: https://github.com/Pedro-Beirao/pyopenglDoom
-https://github.com/rpmcruz
