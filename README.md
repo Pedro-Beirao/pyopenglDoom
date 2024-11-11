@@ -6,9 +6,7 @@ ___
 
 ### Description:
 
-Doom renderer using PyOpenGL + Guide on how to read wad files (with gl nodes) and render maps
-
-Check out the [Guide](guide) to understand how all of this works
+Doom renderer using PyOpenGL
 
 ### 3D Renderer:
 ```
@@ -29,6 +27,6 @@ python main2d.py path/to/doom.wad
 
 ### Goals
 
-1. read data from a WAD file
+1. Read data from a WAD file
 2. Draw the map in both 2d and 3d
 
